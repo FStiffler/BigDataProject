@@ -24,6 +24,6 @@ Due to the group size, we take on two seperate analyses:
 4. ...
 ## Feedback
 
-* Feel free to reach out to any of us [contributors](https://github.com/https://github.com/FStiffler/BigDataProject/graphs/contributors)!
+Feel free to reach out to any of us [contributors](https://github.com/https://github.com/FStiffler/BigDataProject/graphs/contributors)!
 
 
