@@ -1,0 +1,79 @@
+---
+title: 'Big Data Project: Analysing Yelp Data'
+author: "Benedikt Marxer, Flurin Stiffler, Than U & Lukas Jakob"
+date: "26 3 2021"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## The Project
+
+The Project we are about to present is an analysis of a YELP dataset that we found on kaggle.<br>
+The basic idea is to conduct two different analysis:
+<br>
+<br>
+- The probability of being an elite user <br>
+<br>
+We assume that people giving low star reviews will less likely be elite users.
+For this we use a Uluru OLS method.
+<br>
+<br>
+- The most important factors for good restaurant reviews
+<br>
+We try to predict the most important factors by using a forward selection method.
+
+
+## Workflow
+
+- Getting the data
+- Analysis
+- Results
+
+## Getting the data
+
+> - Download the files
+> - Change into usable format
+
+
+## R Code to convert JSON into csv
+
+For the review and user files the code was pretty simple.
+However this used up a lot of RAM and takes a lot of time.
+
+*Load review data*<br>
+review<-stream_in(file('yelp_academic_dataset_review.json'), flatten=T)
+fwrite(review, file="reviews.csv")
+
+*Load user data*<br>
+user<-stream_in(file('yelp_academic_dataset_user.json'), flatten=T)
+fwrite(user, file="user.csv")
+
+For the business.json data we had to use a more complex way.
+This also involved unnesting some of the variables.
+Check out the JSONtoCSV.R file to see what we did.
+
+
+## Getting the data
+
+- Download the files
+- Change into usable format
+- Filtering and cleaning
+
+
+
+## Filtering and cleaning
+The data was still too big
+There were many variables that we did not need so we filtered them out.
+For other variables we put a threshholds to filter them out:
+
+- Users with less than x comments were filtered out, since we only want active users.
+- ....
+
+## Analysis
+
+
+## Results
+
