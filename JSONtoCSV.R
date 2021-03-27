@@ -1,4 +1,4 @@
-#Attention: This file requires a strong computer"
+#Attention: This file requires a computer with strong hardware
 
 library(jsonlite)
 library(tidyverse)
@@ -62,12 +62,7 @@ business<-business1%>%
 #save as csv
 fwrite(business, file="business.csv")
 
-# Load review data ####
-review<-stream_in(file('yelp_academic_dataset_review.json'), flatten=T)
-fwrite(review, file="reviews.csv")
-
 # Load user data ####
-user<-stream_in(file('yelp_academic_dataset_user.json'), flatten=T)
+user<-stream_in(file('yelp_academic_dataset_user.json'), verbose = T)
 fwrite(user, file="user.csv")
-
 
