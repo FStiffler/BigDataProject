@@ -2,14 +2,16 @@
 library(tidyverse)
 library(vroom)
 library(data.table)
+library(skimr)
 
 # Make sure R is in 64 bits, for better performance
-sys.info()[["machine"]] # check output
+Sys.info()[["machine"]] # check output
 
 # import the Yelp business dataset, make sure you have converted the json format to csv format first.
 busi <- vroom("CSVFiles/business.csv") # fastest read method, alternatively use fread("CSVFiles/business.csv") (make benchmark for presentation)
 glimpse(busi)
 summary(busi)
+skim(busi)
 
 # First Problem: Multiple different categories per business. 22 categories with ~1200 subcategories (https://blog.yelp.com/2018/01/yelp_category_list#section21)
 # We can limit our analysis to the restaurants parent-category.
@@ -227,6 +229,7 @@ busi$attributes.RestaurantsDelivery <- recode(busi$attributes.RestaurantsDeliver
 busi$attributes.RestaurantsDelivery <- as.logical(busi$attributes.RestaurantsDelivery)
 
 # Great, our dataset is somewhat ready for the analysis!
+skim(busi) #Column type frequency:  character 20  logical 55  numeric 6 
 
 unique(busi$attributes.RestaurantsAttire) # maybe remove this column?
 
@@ -247,15 +250,11 @@ busi <-
   mutate_all(
     function(x) case_when(
       x == "None" ~ "False"
-      )
     )
+  )
 
 busi <- 
   busi %>% 
   mutate_all(funs(str_replace(., "None", "False")))
 
 busi <- sapply(busi,function(x) {x <- gsub("None","False",x)})
-
-# import the other files, not relevant rn
-review <- vroom("CSVFiles/reviews.csv")
-user <- vroom("CSVFiles/user.csv")
