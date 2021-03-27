@@ -47,20 +47,17 @@ busi <-
          -attributes.DietaryRestrictions.kosher,
          -attributes.DietaryRestrictions.halal,
          -attributes.DietaryRestrictions.vegetarian,
-         -attributes.Open24Hours)
+         -attributes.Open24Hours,
+         -"attributes.DietaryRestrictions.dairy-free", # We need to put quotes around the names to capture the hyphen
+         -"attributes.DietaryRestrictions.gluten-free",
+         -"attributes.DietaryRestrictions.soy-free")
 
-# How to remove these columns? Cannot use select() because of the Hyphen...
-############### Achtung Error #########################################
--attributes.DietaryRestrictions.dairy-free,
--attributes.DietaryRestrictions.gluten-free,
--attributes.DietaryRestrictions.soy-free,
 
-# After the removal of these columns, we check the character-type columns for errors.
+# After the removal of these 19 columns (81 remaining), we check the character-type columns for errors. 
 # One way to do this is with qplots, as most columns allow only a selection of values from the Yelp system.
 
-# visualize attributes to check for errors
 qplot(busi$attributes.RestaurantsTableService) # ok
-qplot(busi$attributes.WiFi) # error: contains disruptive characters
+qplot(busi$attributes.WiFi) # error: contains disruptive characters, None = no?
 qplot(busi$attributes.BikeParking) # ok
 qplot(busi$attributes.BusinessParking.garage) # None = False?
 qplot(busi$attributes.BusinessParking.street) # None = False?
@@ -86,20 +83,19 @@ qplot(busi$attributes.Ambience.upscale) # None = False?
 qplot(busi$attributes.Ambience.classy) # None = False?
 qplot(busi$attributes.Ambience.casual) # None = False?
 qplot(busi$attributes.HasTV) # ok
-qplot(busi$attributes.Alcohol) # Many spelling errors
+qplot(busi$attributes.Alcohol) # Many spelling errors, None = none
 qplot(busi$attributes.GoodForMeal.dessert) # None = False?
 qplot(busi$attributes.GoodForMeal.latenight) # None = False?
-qplot(busi$attributes.GoodForMeal.lunch) # None = False?k
+qplot(busi$attributes.GoodForMeal.lunch) # None = False?
 qplot(busi$attributes.GoodForMeal.dinner) # ok
 qplot(busi$attributes.GoodForMeal.brunch) # None = False?
 qplot(busi$attributes.GoodForMeal.breakfast) # None = False?
 qplot(busi$attributes.DogsAllowed) # ok
 qplot(busi$attributes.RestaurantsTakeOut) # None = False?
-qplot(busi$attributes.NoiseLevel) # Spelling errors
+qplot(busi$attributes.NoiseLevel) # Spelling errors, None = NA
 qplot(busi$attributes.RestaurantsAttire) # Spelling errors
 qplot(busi$attributes.RestaurantsDelivery) # None = False?
 qplot(busi$attributes.GoodForKids) # ok
-qplot(busi$attributes.RestaurantsDelivery) # None = False?
 qplot(busi$attributes.ByAppointmentOnly) # ok
 qplot(busi$attributes.GoodForDancing) # ok
 qplot(busi$attributes.BestNights.monday) # ok
@@ -119,7 +115,7 @@ qplot(busi$attributes.Music.video) # ok
 qplot(busi$attributes.Music.karaoke) # ok
 qplot(busi$attributes.BYOB) # ok
 qplot(busi$attributes.CoatCheck) # ok
-qplot(busi$attributes.Smoking) # Spelling errors, many NAs
+qplot(busi$attributes.Smoking) # Spelling errors, many NAs, None = no?
 qplot(busi$attributes.DriveThru) # ok
 qplot(busi$attributes.BYOBCorkage) # Spelling errors, many Nas
 qplot(busi$attributes.Corkage) # ok
@@ -133,19 +129,132 @@ qplot(busi$hours.Sunday) #
 
 # Now, lets clean up the attributes
 
-# Test the clean up with the WiFi attribute
+# Correct the spelling errors
+# somehow I can't manage to put multiple strings that need to be removed in one str_remove command,
+# nor does the str_remove work in the pipe %>%
+
+busi$attributes.WiFi <- str_remove_all(busi$attributes.WiFi, "u'")
 busi$attributes.WiFi <- str_remove_all(busi$attributes.WiFi, "'")
-busi$attributes.WiFi <- str_remove_all(busi$attributes.WiFi, "u")
 
-# doesnt work in the pipe, wtf
+busi$attributes.Alcohol <- str_remove_all(busi$attributes.Alcohol, "u'")
+busi$attributes.Alcohol <- str_remove_all(busi$attributes.Alcohol, "'")
+
+busi$attributes.NoiseLevel <- str_remove_all(busi$attributes.NoiseLevel, "u'")
+busi$attributes.NoiseLevel <- str_remove_all(busi$attributes.NoiseLevel, "'")
+
+busi$attributes.RestaurantsAttire <- str_remove_all(busi$attributes.RestaurantsAttire, "u'")
+busi$attributes.RestaurantsAttire <- str_remove_all(busi$attributes.RestaurantsAttire, "'")
+
+busi$attributes.Smoking <- str_remove_all(busi$attributes.Smoking, "u'")
+busi$attributes.Smoking <- str_remove_all(busi$attributes.Smoking, "'")
+
+busi$attributes.BYOBCorkage <- str_remove_all(busi$attributes.BYOBCorkage, "u'")
+busi$attributes.BYOBCorkage <- str_remove_all(busi$attributes.BYOBCorkage, "'")
+
+# All attributes are spelled correctly now. However, we need to clean up the value differences of None, No and False. 
+# Presumably, these three specifications mean the same thing.
+
+busi$attributes.WiFi <- recode(busi$attributes.WiFi, None = "no")
+
+busi$attributes.Alcohol <- recode(busi$attributes.Alcohol, None = "none")
+
+busi$attributes.NoiseLevel <- na_if(busi$attributes.NoiseLevel, "None")
+
+busi$attributes.RestaurantsAttire <- na_if(busi$attributes.RestaurantsAttire, "None")
+
+busi$attributes.Smoking <- recode(busi$attributes.Smoking, None = "no")
+
+busi$attributes.BYOBCorkage <- recode(busi$attributes.BYOBCorkage, None = "no")
+
+busi$attributes.BusinessParking.garage <- recode(busi$attributes.BusinessParking.garage, None = "False")
+busi$attributes.BusinessParking.garage <- as.logical(busi$attributes.BusinessParking.garage)
+
+busi$attributes.BusinessParking.street <- recode(busi$attributes.BusinessParking.street, None = "False")
+busi$attributes.BusinessParking.street <- as.logical(busi$attributes.BusinessParking.street)
+
+busi$attributes.BusinessParking.validated <- recode(busi$attributes.BusinessParking.validated, None = "False")
+busi$attributes.BusinessParking.validated <- as.logical(busi$attributes.BusinessParking.validated)
+
+busi$attributes.BusinessParking.lot <- recode(busi$attributes.BusinessParking.lot, None = "False")
+busi$attributes.BusinessParking.lot <- as.logical(busi$attributes.BusinessParking.lot)
+
+busi$attributes.OutdoorSeating <- recode(busi$attributes.OutdoorSeating, None = "False")
+busi$attributes.OutdoorSeating <- as.logical(busi$attributes.OutdoorSeating)
+
+busi$attributes.Ambience.touristy <- recode(busi$attributes.Ambience.touristy, None = "False")
+busi$attributes.Ambience.touristy <- as.logical(busi$attributes.Ambience.touristy)
+
+busi$attributes.Ambience.romantic <- recode(busi$attributes.Ambience.romantic, None = "False")
+busi$attributes.Ambience.romantic <- as.logical(busi$attributes.Ambience.romantic)
+
+busi$attributes.Ambience.divey <- recode(busi$attributes.Ambience.divey, None = "False")
+busi$attributes.Ambience.divey <- as.logical(busi$attributes.Ambience.divey)
+
+busi$attributes.Ambience.intimate <- recode(busi$attributes.Ambience.intimate, None = "False")
+busi$attributes.Ambience.intimate <- as.logical(busi$attributes.Ambience.intimate)
+
+busi$attributes.Ambience.trendy <- recode(busi$attributes.Ambience.trendy, None = "False")
+busi$attributes.Ambience.trendy <- as.logical(busi$attributes.Ambience.trendy)
+
+busi$attributes.Ambience.upscale <- recode(busi$attributes.Ambience.upscale, None = "False")
+busi$attributes.Ambience.upscale <- as.logical(busi$attributes.Ambience.upscale)
+
+busi$attributes.Ambience.classy <- recode(busi$attributes.Ambience.classy, None = "False")
+busi$attributes.Ambience.classy <- as.logical(busi$attributes.Ambience.classy)
+
+busi$attributes.Ambience.casual <- recode(busi$attributes.Ambience.casual, None = "False")
+busi$attributes.Ambience.casual <- as.logical(busi$attributes.Ambience.casual)
+
+busi$attributes.GoodForMeal.dessert <- recode(busi$attributes.GoodForMeal.dessert, None = "False")
+busi$attributes.GoodForMeal.dessert <- as.logical(busi$attributes.GoodForMeal.dessert)
+
+busi$attributes.GoodForMeal.latenight <- recode(busi$attributes.GoodForMeal.latenight, None = "False")
+busi$attributes.GoodForMeal.latenight <- as.logical(busi$attributes.GoodForMeal.latenight)
+
+busi$attributes.GoodForMeal.lunch <- recode(busi$attributes.GoodForMeal.lunch, None = "False")
+busi$attributes.GoodForMeal.lunch <- as.logical(busi$attributes.GoodForMeal.lunch)
+
+busi$attributes.GoodForMeal.brunch <- recode(busi$attributes.GoodForMeal.brunch, None = "False")
+busi$attributes.GoodForMeal.brunch <- as.logical(busi$attributes.GoodForMeal.brunch)
+
+busi$attributes.GoodForMeal.breakfast <- recode(busi$attributes.GoodForMeal.breakfast, None = "False")
+busi$attributes.GoodForMeal.breakfast <- as.logical(busi$attributes.GoodForMeal.breakfast)
+
+busi$attributes.RestaurantsTakeOut <- recode(busi$attributes.RestaurantsTakeOut, None = "False")
+busi$attributes.RestaurantsTakeOut <- as.logical(busi$attributes.RestaurantsTakeOut)
+
+busi$attributes.RestaurantsDelivery <- recode(busi$attributes.RestaurantsDelivery, None = "False")
+busi$attributes.RestaurantsDelivery <- as.logical(busi$attributes.RestaurantsDelivery)
+
+# Great, our dataset is somewhat ready for the analysis!
+
+unique(busi$attributes.RestaurantsAttire) # maybe remove this column?
+
+# other columns for removal: is_open , maybe the hours.weekday series
+
+# Write the clean file:
+vroom_write(busi, "busivroom.csv", delim = ",")
+# 15.7 MB (small size increase after the as.logical changes)
+
+fwrite(busi, file="busiclean.csv")
+# 13.8 MB (somehow the file got smaller)
+
+########## To get fewer lines, I tried all of these methods, without success...... ###############
+busi <- recode(busi, None = "False")
+
 busi <- 
-  busi %>%
-  str_remove_all(attributes.WiFi, "'")
+  busi %>% 
+  mutate_all(
+    function(x) case_when(
+      x == "None" ~ "False"
+      )
+    )
 
+busi <- 
+  busi %>% 
+  mutate_all(funs(str_replace(., "None", "False")))
 
-### Clean up the other annoted attributes
-
-### Drop columns that we dont need (e.g. Adress, Name, etc.)
+busi <- sapply(busi,function(x) {x <- gsub("None","False",x)})
 
 # import the other files, not relevant rn
 review <- vroom("CSVFiles/reviews.csv")
