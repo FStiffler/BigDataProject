@@ -35,22 +35,12 @@ df2<-df%>%select(1,2,4:25,27:33,36)
 
 #creating dummy variables df3
 df3<-df
-df3$attributes.WiFi[df3$attributes.WiFi== "no"]<- 0
-df3$attributes.WiFi[df3$attributes.WiFi== "paid"]<- 1
-df3$attributes.WiFi[df3$attributes.WiFi== "free"]<- 2
-
-df3$attributes.Alcohol[df3$attributes.Alcohol== "none"]<- 0
-df3$attributes.Alcohol[df3$attributes.Alcohol== "beer_and_wine"]<- 1
-df3$attributes.Alcohol[df3$attributes.Alcohol== "full_bar"]<- 2
 
 
-df3$attributes.NoiseLevel[df3$attributes.NoiseLevel== "very_loud"]<-0
-df3$attributes.NoiseLevel[df3$attributes.NoiseLevel== "loud"]<- 1
-df3$attributes.NoiseLevel[df3$attributes.NoiseLevel== "average"]<- 2
-df3$attributes.NoiseLevel[df3$attributes.NoiseLevel== "quiet"]<- 3
-
-df3$attributes.RestaurantsAttire[df3$attributes.RestaurantsAttire== "dressy"]<- 0
-df3$attributes.RestaurantsAttire[df3$attributes.RestaurantsAttire== "casual"]<- 1
+df3[,"attributes.WiFi"]<-as.factor(df3[,"attributes.WiFi"])
+df3[,"attributes.Alcohol"]<-as.factor(df3[,"attributes.Alcohol"])
+df3[,"attributes.NoiseLevel"]<-as.factor(df3[,"attributes.NoiseLevel"])
+df3[,"attributes.RestaurantsAttire"]<-as.factor(df3[,"attributes.RestaurantsAttire"])
 
 cor <- round(cor(df3[,c(2:36)]),2) 
 corrplot(cor)
