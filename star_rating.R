@@ -2,22 +2,22 @@
 
 setwd("C:/Users/sthan/OneDrive/Desktop/Universität Luzern/MASTER UNILU/FS2021/Big_Data")
 library(tidyverse)
-library(corrplot)
 library(glmnet)
 library(magrittr)
 data <- read.csv(file = 'busiclean.csv')
 head(data)
 
-#selecting the attributes for the stars
-
+#selecting the attributes, which define the rating 
 data_prep<-data %>% select(9,13:74)
 
 data_clean<-na.omit(data_prep)
-#there is just one observation with an entry for every attribute. we have to use an other identify strategy. we wil focus on the normal attributes which are normal in our opinions. this
-#might be food, ambient, service and so one. on yelp there are several other paramteres which are kind of unnecessary for the normal restaurant visitiors.
+#there is just one observation with an entry for every attribute. we have to use an other identification strategy.
+#we will focus on variables that apply to a large number of restaurants. Yelp also has variables that apply to niche restaurants. 
+#An example of this would be a karaoke restaurant..
 
 summary(data_prep)
-# on the first step i would select covariates with less than 20000NAs into the final dataset for the analysis. we need to have a dataset, which is big eneough to make anaylsis.
+# on the first step we select covariates with less than 20000NAs into the final dataset for the analysis.
+#We need to have a dataset, which is big eneough to make an anaylsis.
 
 data_prep2<-data_prep %>% select(1:11, 13:15, 18:35, 37:39, 41)
 data_prep2omit<-na.omit(data_prep2)
@@ -32,28 +32,30 @@ df<-df[complete.cases(df),]
 df %<>% mutate_if(is.logical,as.numeric) 
 
 
-#creating dummy variables df3
-df3<-df
+#creating dummy variables
+
+df[,"attributes.WiFi"]<-as.factor(df[,"attributes.WiFi"])
+df[,"attributes.Alcohol"]<-as.factor(df[,"attributes.Alcohol"])
+df[,"attributes.NoiseLevel"]<-as.factor(df[,"attributes.NoiseLevel"])
+df[,"attributes.RestaurantsAttire"]<-as.factor(df[,"attributes.RestaurantsAttire"])
+df[,"attributes.RestaurantsPriceRange2"]<-as.factor(df[,"attributes.RestaurantsPriceRange2"])
 
 
-df3[,"attributes.WiFi"]<-as.factor(df3[,"attributes.WiFi"])
-df3[,"attributes.Alcohol"]<-as.factor(df3[,"attributes.Alcohol"])
-df3[,"attributes.NoiseLevel"]<-as.factor(df3[,"attributes.NoiseLevel"])
-df3[,"attributes.RestaurantsAttire"]<-as.factor(df3[,"attributes.RestaurantsAttire"])
-df3[,"attributes.RestaurantsPriceRange2"]<-as.factor(df3[,"attributes.RestaurantsPriceRange2"])
+summary(df)
 
-
-summary(df3)
-
-ols <- lm(stars ~ ., data = df3)
+ols <- lm(stars ~ ., data = df)
 summary(ols)
+#the most important attribute for the star rating seems to be the noise level. This is negatively correlated with the rating. 
 
+
+
+#Lasso and ridge were only applied to see which attributes were seen as important.
 #lasso 
-lasso <- glmnet(as.matrix(df3[,c(2:36)]), df3$stars, alpha = 1) 
-plot(lasso, xvar = "lambda", label = TRUE)
+lasso <- glmnet(as.matrix(df[,c(2:36)]), df$stars, alpha = 1) 
+plot(lasso, xvar = "lambda", label = TRUE)# on the very left the lasso model is similar to the ols.
 
 #cross validation for finding the right lamda value
-lasso.cv <- cv.glmnet(as.matrix(df3[,c(2:36)]), df3$stars, type.measure = "mse", nfolds = 5, alpha = 1)
+lasso.cv <- cv.glmnet(as.matrix(df[,c(2:36)]), df$stars, type.measure = "mse", nfolds = 5, alpha = 1)
 
 plot(lasso.cv)
 
@@ -62,20 +64,20 @@ print(paste0("Optimal lambda using one-standard-error-rule: ", lasso.cv$lambda.1
 
 # Print Lasso coefficients
 print(coef(lasso.cv, s = "lambda.min"))
-
+#According to lasso is the attribute Ambience touristy not so important for the ratings. 
 
 
 # alpha = 0 specifies a Ridge model
 
 # Estimate the Ridge
-ridge <- glmnet(as.matrix(df3[,c(2:36)]), df3$stars, alpha = 0)
+ridge <- glmnet(as.matrix(df[,c(2:36)]), df$stars, alpha = 0)
 
 # Plot the path of the Ridge coefficients
 plot(ridge, xvar = "lambda", label = TRUE)
 
 
 # Cross-validate the Ridge model 
-ridge.cv <- cv.glmnet(as.matrix(df3[,c(2:36)]), df2$stars, type.measure = "mse", nfolds = 5, alpha = 0)
+ridge.cv <- cv.glmnet(as.matrix(df[,c(2:36)]), df$stars, type.measure = "mse", nfolds = 5, alpha = 0)
 
 # Plot the MSE in the cross-validation samples
 plot(ridge.cv)
@@ -85,7 +87,7 @@ print(paste0("Optimal lambda that minimizes cross-validated MSE: ", ridge.cv$lam
 print(paste0("Optimal lambda using one-standard-error-rule: ", ridge.cv$lambda.1se))
 
 
-####################  Ridge Coefficients  ########################
+#  Ridge Coefficients  #
 
 # Print Ridge coefficients
 print(coef(ridge.cv, s = "lambda.min"))
