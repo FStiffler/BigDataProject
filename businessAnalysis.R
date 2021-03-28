@@ -29,6 +29,7 @@ df[df==""]<-NA
 df<-df[complete.cases(df),]
 
 # forward selection
-forward<-regsubsets(stars~.,data=df ,nvmax=36, method ="forward", intercept = FALSE)
-names(df)[forward$vorder[1]]
-summary(forward)
+forward<-regsubsets(stars~.,data=data_prep2 ,nvmax=36, method ="forward", intercept = FALSE) #forward selection of variables
+overview<-summary(forward)$which #logical matrix showing which variable is in what forward model
+which(overview[1,]==TRUE) #most important variable 
+
