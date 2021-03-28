@@ -30,8 +30,7 @@ df<-df[complete.cases(df),]
 
 #transform data to numercs(dummy variable), TRUE= 1, FALSE=0
 df %<>% mutate_if(is.logical,as.numeric) 
-#repalcing char values with logical 
-df2<-df%>%select(1,2,4:25,27:33,36)
+
 
 #creating dummy variables df3
 df3<-df
@@ -41,6 +40,10 @@ df3[,"attributes.WiFi"]<-as.factor(df3[,"attributes.WiFi"])
 df3[,"attributes.Alcohol"]<-as.factor(df3[,"attributes.Alcohol"])
 df3[,"attributes.NoiseLevel"]<-as.factor(df3[,"attributes.NoiseLevel"])
 df3[,"attributes.RestaurantsAttire"]<-as.factor(df3[,"attributes.RestaurantsAttire"])
+df3[,"attributes.RestaurantsPriceRange2"]<-as.factor(df3[,"attributes.RestaurantsPriceRange2"])
+
+
+summary(df3)
 
 cor <- round(cor(df3[,c(2:36)]),2) 
 corrplot(cor)
@@ -49,7 +52,7 @@ ols <- lm(stars ~ ., data = df3)
 summary(ols)
 
 #lasso 
-lasso <- glmnet(as.matrix(df3[,c(2:36)]), df3$stars, alpha = 1) # We save the model under the name "lasso"
+lasso <- glmnet(as.matrix(df3[,c(2:36)]), df3$stars, alpha = 1) 
 plot(lasso, xvar = "lambda", label = TRUE)
 
 #cross validation for finding the right lamda value
