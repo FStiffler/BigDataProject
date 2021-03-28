@@ -45,9 +45,6 @@ df3[,"attributes.RestaurantsPriceRange2"]<-as.factor(df3[,"attributes.Restaurant
 
 summary(df3)
 
-cor <- round(cor(df3[,c(2:36)]),2) 
-corrplot(cor)
-
 ols <- lm(stars ~ ., data = df3)
 summary(ols)
 
