@@ -1,10 +1,10 @@
 #business analysis star rating 
-
-setwd("C:/Users/sthan/OneDrive/Desktop/Universität Luzern/MASTER UNILU/FS2021/Big_Data")
 library(tidyverse)
 library(corrplot)
 library(glmnet)
 library(magrittr)
+library(leaps)
+
 data <- read.csv(file = 'busiclean.csv')
 head(data)
 
@@ -27,3 +27,8 @@ df<-data_prep2omit
 
 df[df==""]<-NA
 df<-df[complete.cases(df),]
+
+# forward selection
+forward<-regsubsets(stars~.,data=df ,nvmax=36, method ="forward", intercept = FALSE)
+names(df)[forward$vorder[1]]
+summary(forward)
