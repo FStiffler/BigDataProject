@@ -63,6 +63,6 @@ fwrite(business, file="businessLarge.csv")
 user<-stream_in(file('yelp_academic_dataset_user.json'), verbose = T)
 fwrite(user, file="userLarge.csv")
 
-# Remove objects and collect garbage
+# Remove objects and collect garbage ####
 rm(list=ls())
 gc()

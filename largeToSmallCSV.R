@@ -1,14 +1,13 @@
-# Script to clean up the business dataset, after converting to csv format.
-library(tidyverse)
-library(vroom)
-library(data.table)
-library(skimr)
+# Load dependencies (if not done already)
+source("packageDependencies.R")
+
+# Clean up of businessLarge.csv to convert it to a smaller csv file ####
 
 # Make sure R is in 64 bits, for better performance
 Sys.info()[["machine"]] # check output
 
-# import the Yelp business dataset, make sure you have converted the json format to csv format first.
-busi <- vroom("CSVFiles/business.csv") # fastest read method, alternatively use fread("CSVFiles/business.csv") (make benchmark for presentation)
+# Load data and have a look at it 
+busi <- fread("businessLarge.csv") # fastest read method according to benchmark test
 glimpse(busi)
 summary(busi)
 skim(busi)
@@ -22,7 +21,7 @@ busi <-
 
 # Some businesses are closed
 qplot(busi$is_open)
-# to further reduce our data load, we can restrict our analysis on restaurants that were still in business at the time of data collection.
+# To further reduce our data load, we can restrict our analysis on restaurants that were still in business at the time of data collection.
 busi <- 
   busi %>%
   filter(is_open==1)
@@ -31,7 +30,7 @@ busi <-
 # Now, lets check for columns that need to be cleaned up or removed.
 summary(busi)
 
-# we remove all columns that contain +95% NAs.
+# We remove all columns that contain +95% NAs.
 busi <- 
   busi %>%
   select(-attributes.AcceptsInsurance,
@@ -132,8 +131,6 @@ qplot(busi$hours.Sunday) #
 # Now, lets clean up the attributes
 
 # Correct the spelling errors
-# somehow I can't manage to put multiple strings that need to be removed in one str_remove command,
-# nor does the str_remove work in the pipe %>%
 
 busi$attributes.WiFi <- str_remove_all(busi$attributes.WiFi, "u'")
 busi$attributes.WiFi <- str_remove_all(busi$attributes.WiFi, "'")
@@ -231,30 +228,44 @@ busi$attributes.RestaurantsDelivery <- as.logical(busi$attributes.RestaurantsDel
 # Great, our dataset is somewhat ready for the analysis!
 skim(busi) #Column type frequency:  character 20  logical 55  numeric 6 
 
-unique(busi$attributes.RestaurantsAttire) # maybe remove this column?
+# Write remaining obseravtions into new csv file
+fwrite(busi, file="businessSmall.csv")
 
-# other columns for removal: is_open , maybe the hours.weekday series
+# Clean up of userLarge.csv to convert it to a smaller csv file ####
 
-# Write the clean file:
-vroom_write(busi, "busivroom.csv", delim = ",")
-# 15.7 MB (small size increase after the as.logical changes)
+# Import user file with particular variables
+user <- fread("userLarge.csv", select=c(user_id="character", review_count="numeric", useful="numeric", average_stars="numeric", elite = "character")) #fastest read method according to benchmark test
 
-fwrite(busi, file="busiclean.csv")
-# 13.8 MB (somehow the file got smaller)
+# Look at data
 
-########## To get fewer lines, I tried all of these methods, without success...... ###############
-busi <- recode(busi, None = "False")
+## Structure of data
+str(user)
+head(user)
 
-busi <- 
-  busi %>% 
-  mutate_all(
-    function(x) case_when(
-      x == "None" ~ "False"
-    )
-  )
+## How are the number of reviews distributed on the lower end?
+ggplot(user, aes(x=review_count))+
+  geom_histogram(binwidth = 1, color="red")+
+  scale_x_continuous(breaks = seq(0, 100, 1), limits = c(0,100)) #a lot of users with 1 review
 
-busi <- 
-  busi %>% 
-  mutate_all(funs(str_replace(., "None", "False")))
+## Are there users with 0 reviews?
+any(user$review_count==0) #yes
 
-busi <- sapply(busi,function(x) {x <- gsub("None","False",x)})
+
+## Are there even non elite users?
+any(is.na(user$elite)) #yes
+
+
+#prepare user data
+userNew<-user%>%
+  filter(review_count>=1)%>% #only take users with at least one comment into consideration
+  mutate(eliteDummy=ifelse(!is.na(elite),1,0))%>% #create dummy if at some point, user is an elite user
+  select(-elite)%>% #drop original elite column
+  mutate(usefulPerReview=useful/review_count)%>% #create variable for average useful mentions per review 
+  select(-useful)
+
+#write smaller csv file
+fwrite(userNew, "userSmall.csv")
+
+# Remove objects and collect garbage ####
+rm(list=ls())
+gc()
