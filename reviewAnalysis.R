@@ -178,6 +178,7 @@ full <- full %>%
          "Uluru" = V2)
 
 # 5)
+
 # define subsamples
 n_subs_sizes <- seq(from = 1000, to = 500000, by=10000)
 n_runs <- length(n_subs_sizes)
@@ -189,10 +190,13 @@ for (i in 1:n_runs) {
   n_subs <- n_subs_sizes[i]
   # select subsample and remainder
   n_obs <- nrow(X)
-  X_subs <- X[1L:n_subs,]
-  y_subs <- y[1L:n_subs]
-  X_rem <- X[(n_subs+1L):n_obs,]
-  y_rem <- y[(n_subs+1L):n_obs]
+  # create row indeces
+  sample_obs<-sample(1L:nrow(X), n_subs, replace=F)
+  # subset X and y
+  X_subs <- X[sample_obs,]
+  y_subs <- y[sample_obs]
+  X_rem <- X[-sample_obs]
+  y_rem <- y[sample_obs]
   
   mc_results[i] <- beta_uluru(X_subs, y_subs, X_rem, y_rem)[2] # the first element is the intercept
   mc_times[i] <- system.time(beta_uluru(X_subs, y_subs, X_rem, y_rem))[3]
