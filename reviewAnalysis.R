@@ -8,6 +8,7 @@ library(tidyverse)
 library(data.table)
 library(skimr)
 library(stargazer)
+library(microbenchmark)
 
 user <- fread("CSVFiles_small/userSmall.csv") # file size 84.4 MB
 skim(user)
@@ -180,7 +181,7 @@ full <- full %>%
 # 5)
 
 # define subsamples
-n_subs_sizes <- seq(from = 1000, to = 500000, by=10000)
+n_subs_sizes <- seq(from = 1000, to = 500000, by=5000)
 n_runs <- length(n_subs_sizes)
 # compute uluru result, stop time
 mc_results <- rep(NA, n_runs)
@@ -194,9 +195,9 @@ for (i in 1:n_runs) {
   sample_obs<-sample(1L:nrow(X), n_subs, replace=F)
   # subset X and y
   X_subs <- X[sample_obs,]
-  y_subs <- y[sample_obs]
-  X_rem <- X[-sample_obs]
-  y_rem <- y[sample_obs]
+  y_subs <- y[sample_obs,]
+  X_rem <- X[-sample_obs,]
+  y_rem <- y[-sample_obs,]
   
   mc_results[i] <- beta_uluru(X_subs, y_subs, X_rem, y_rem)[2] # the first element is the intercept
   mc_times[i] <- system.time(beta_uluru(X_subs, y_subs, X_rem, y_rem))[3]
@@ -211,6 +212,7 @@ ols_res <- beta_ols(X, y)[2]
 plotdata <- data.frame(beta1 = mc_results,
                        time_elapsed = mc_times,
                        subs_size = n_subs_sizes)
+fwrite(x = plotdata, file = "uluru_ols_benchmark_data.csv")
 # First, let's look at the time used estimate the linear model.
 ggplot(plotdata, aes(x = subs_size, y = time_elapsed)) +
   geom_point(color="darkgreen") + 
@@ -235,8 +237,8 @@ ggplot(plotdata, aes(x = subs_size, y = beta1)) +
   ylab("Estimated coefficient") +
   xlab("Subsample size")
 
-
-
+pdf("uluru_ols_benchmark.pdf")
+dev.off()
 ### plot ols in a scatterplot3d, from https://mgimond.github.io/Stats-in-R/regression.html
 library(scatterplot3d) 
 s3d <- scatterplot3d(user$average_stars, user$usefulPerReview, user$eliteDummy, 
