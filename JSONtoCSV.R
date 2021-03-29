@@ -1,15 +1,12 @@
-#Attention: This file requires a computer with strong hardware
-
-library(jsonlite)
-library(tidyverse)
-library(data.table)
+# load dependencies
+source("packageDependencies.R")
 
 # Load business data ####
 
-##List with all json object strings as single list elements
-jsonStrings<-as.list(readLines('yelp_academic_dataset_business.json'))#read each line seperately and combine resulting vector to a list
+## List with all json object strings as single list elements
+jsonStrings<-as.list(readLines('yelp_academic_dataset_business.json'))# Read each line seperately and combine resulting vector to a list
 
-##Create function to modify json file so that subobjects are recognized as well (in the raw data, some subobjects of a json object are defined as a single string value)
+## Create function to modify json file in a way that subobjects are recognized as well (in the raw data, some subobjects of a json object are defined as a single string value)
 modifyObject<-function(x){
   
   string<-x
@@ -28,21 +25,21 @@ modifyObject<-function(x){
   
   newString<-paste0(modOriginal,subObj, collapse = "") #paste values of modOriginal to first value of subObj so that first values go together, second go together, usw. Collapse to one string
   
-  #output
+  #Output
   newString
   
 }
 
-##Vectorize function so that is applicable to all elements in list
+## Vectorize function so that is applicable to all elements in list
 modifyObjects<-Vectorize(modifyObject, SIMPLIFY = F)
 
-##Create list with modified json strings 
+## Create list with modified json strings 
 outputList<-modifyObjects(jsonStrings)
 
-##Read strings to dataframe
+## Read strings to dataframe
 business1 <- tibble(fromJSON(sprintf('[%s]', paste(outputList, collapse=',')), simplifyVector=TRUE, simplifyDataFrame=TRUE, simplifyMatrix=TRUE , flatten=TRUE))
 
-#unnest columns with lists in a way that each element in the list has its own column
+## Unnest columns with lists in a way that each element in the list has its own column
 business<-business1%>% 
   mutate(attributes.BusinessParking=ifelse(attributes.BusinessParking %in% c("None","{}"),list(NULL),attributes.BusinessParking))%>%
   unnest_wider(attributes.BusinessParking, names_sep = ".")%>%
@@ -59,10 +56,10 @@ business<-business1%>%
   mutate(attributes.DietaryRestrictions=ifelse(attributes.DietaryRestrictions%in% c("None","{}"),list(NULL),attributes.DietaryRestrictions))%>%
   unnest_wider(attributes.DietaryRestrictions, names_sep = ".")
 
-#save as csv
-fwrite(business, file="business.csv")
+## Save as csv
+fwrite(business, file="businessLarge.csv")
 
 # Load user data ####
 user<-stream_in(file('yelp_academic_dataset_user.json'), verbose = T)
-fwrite(user, file="user.csv")
+fwrite(user, file="userLarge.csv")
 
