@@ -288,12 +288,6 @@ busi$attributes.Corkage <- recode(busi$attributes.Corkage, None = as.character(N
 busi$attributes.Corkage <- as.logical(busi$attributes.Corkage) #convert to logical
 
 qplot(busi$hours.Monday) # Hours need to be worked on, maybe not so useful for our analysis.
-qplot(busi$hours.Tuesday) # 
-qplot(busi$hours.Wednesday) # 
-qplot(busi$hours.Thursday) # 
-qplot(busi$hours.Friday) # 
-qplot(busi$hours.Saturday) # 
-qplot(busi$hours.Sunday) # 
 
 
 
