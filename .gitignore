@@ -4,3 +4,4 @@
 *.csv
 .Rproj.user
 *.ff
+.Rhistory
