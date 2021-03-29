@@ -8,7 +8,7 @@ library(tidyverse)
 library(data.table)
 library(skimr)
 
-user <- fread("CSVFiles_small/userSmall.csv") # file size 84.4 MB
+user <- fread("userSmall.csv") # file size 84.4 MB
 skim(user)
 # +2MM observations, 5 rows
 # user_id, review_count, average_stars, eliteDummy, usefulPerReview
@@ -91,13 +91,16 @@ beta_uluru <-
     return(b_fs + b_correct)
   }
 # set size of subsample
-n_subs <- 1000
+n_subs <- 10000
 # select subsample and remainder
 n_obs <- nrow(X)
-X_subs <- X[1L:n_subs,]
-y_subs <- y[1L:n_subs]
-X_rem <- X[(n_subs+1L):n_obs,]
-y_rem <- y[(n_subs+1L):n_obs]
+#create row indeces
+sample_obs<-sample(1L:nrow(X), n_subs, replace=F)
+#subset X and y
+X_subs <- X[sample_obs,]
+y_subs <- y[sample_obs, ]
+X_rem <- X[-sample_obs,]
+y_rem <- y[-sample_obs,]
 
 # apply the uluru estimator
 beta_uluru(X_subs, y_subs, X_rem, y_rem)
