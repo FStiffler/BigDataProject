@@ -1,34 +1,37 @@
-# Test speed of business.csv import using four different methods, measured with microbenchmark
-
-library(tidyverse)
-library(vroom)
-library(data.table)
-library(microbenchmark)
+# Test speed of businessLarge.csv and userLarge.csv import using four different methods, measured with microbenchmark
+source("packageDependencies.R")
 
 
-# Microbenchmark:
-results_vroom <- microbenchmark(
-  'base::read.csv' = read.csv("CSVFiles/business.csv"),
-  'readr::read_csv' = read_csv("CSVFiles/business.csv"),
-  'vroom::vroom' = vroom("CSVFiles/business.csv"),
-  'data.table::fread' = fread("CSVFiles/business.csv"),
+# Microbenchmark business file: ####
+results_business <- microbenchmark(
+  'base::read.csv' = read.csv("businessLarge.csv"),
+  'readr::read_csv' = read_csv("businessLarge.csv"),
+  'vroom::vroom' = vroom("businessLarge.csv"),
+  'data.table::fread' = fread("businessLarge.csv"),
   times = 25L
 )
 
+#Plot results
+autoplot(results_business) #<---Output for Presentation
 
-### Plot and save results
-# Start pdf capture
-pdf("business_microbenchmark.pdf")
+# Microbenchmark business file: ####
+results_user <- microbenchmark(
+  
+  'readr::read_csv' = read_csv("userLarge.csv", 
+                               col_types = cols_only(user_id = "c", review_count="d",useful="d",average_stars="d",elite="c")),
+    
+  'vroom::vroom' = vroom("userLarge.csv", 
+                         col_select = c(user_id, review_count, useful, average_stars, elite),
+                         col_types = c(elite = "c")),
+  
+  'data.table::fread' = fread("userLarge.csv",
+                              select=c(user_id="character", review_count="numeric", useful="numeric", average_stars="numeric", elite = "character")),
+  
+  times = 10L
+)
 
-# plot
-autoplot(object = results_vroom) +
-  scale_y_log10() +
-  labs(y = "Time [milliseconds], logged",
-       title = "Business.csv Benchmark",
-       caption = "Package \"Microbenchmark\"")
+#Plot results
+autoplot(results_user) #<---Output for Presentation
 
-# sign dev off
-dev.off()
 
-# save results for later
-fwrite(results_vroom, file = "results_microbenchmark.csv")
+
