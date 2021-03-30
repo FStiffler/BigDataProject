@@ -51,11 +51,25 @@ summary(ols)
 
 #Lasso and ridge were only applied to see which attributes were seen as important.
 #lasso 
-lasso <- glmnet(as.matrix(df[,c(2:36)]), df$stars, alpha = 1) 
-plot(lasso, xvar = "lambda", label = TRUE)# on the very left the lasso model is similar to the ols.
+df_ml<-df
+df_ml[,"attributes.WiFi"]<-as.numeric(df_ml[,"attributes.WiFi"])
+df_ml[,"attributes.Alcohol"]<-as.numeric(df_ml[,"attributes.Alcohol"])
+df_ml[,"attributes.NoiseLevel"]<-as.numeric(df_ml[,"attributes.NoiseLevel"])
+df_ml[,"attributes.RestaurantsAttire"]<-as.numeric(df_ml[,"attributes.RestaurantsAttire"])
+df_ml[,"attributes.RestaurantsPriceRange2"]<-as.numeric(df_ml[,"attributes.RestaurantsPriceRange2"])
+str(df_ml)
+summary(df_ml)
+
+lasso <- glmnet(as.matrix(df_ml[,c(2:36)]), df_ml$stars, alpha = 1) 
+plot(lasso, xvar = "lambda", label = TRUE)
+# on the very left the lasso model is similar to the ols. On the very right we have a sparse model.
+# The sparse model consists of two covariates.
+#The further to the right the variables are, the more decisive these variables are for the rating.
+
+
 
 #cross validation for finding the right lamda value
-lasso.cv <- cv.glmnet(as.matrix(df[,c(2:36)]), df$stars, type.measure = "mse", nfolds = 5, alpha = 1)
+lasso.cv <- cv.glmnet(as.matrix(df_ml[,c(2:36)]), df_ml$stars, type.measure = "mse", nfolds = 5, alpha = 1)
 
 plot(lasso.cv)
 
@@ -64,20 +78,21 @@ print(paste0("Optimal lambda using one-standard-error-rule: ", lasso.cv$lambda.1
 
 # Print Lasso coefficients
 print(coef(lasso.cv, s = "lambda.min"))
-#According to lasso is the attribute Ambience touristy not so important for the ratings. 
+#According to lasso is the attribute Ambience touristy is not so important for the ratings.
+#As these are machine learning approaches, the coefficients cannot be interpreted. 
 
 
 # alpha = 0 specifies a Ridge model
 
 # Estimate the Ridge
-ridge <- glmnet(as.matrix(df[,c(2:36)]), df$stars, alpha = 0)
+ridge <- glmnet(as.matrix(df_ml[,c(2:36)]), df_ml$stars, alpha = 0)
 
 # Plot the path of the Ridge coefficients
 plot(ridge, xvar = "lambda", label = TRUE)
 
 
 # Cross-validate the Ridge model 
-ridge.cv <- cv.glmnet(as.matrix(df[,c(2:36)]), df$stars, type.measure = "mse", nfolds = 5, alpha = 0)
+ridge.cv <- cv.glmnet(as.matrix(df_ml[,c(2:36)]), df_ml$stars, type.measure = "mse", nfolds = 5, alpha = 0)
 
 # Plot the MSE in the cross-validation samples
 plot(ridge.cv)
@@ -92,6 +107,5 @@ print(paste0("Optimal lambda using one-standard-error-rule: ", ridge.cv$lambda.1
 # Print Ridge coefficients
 print(coef(ridge.cv, s = "lambda.min"))
 
-# Save for later comparison
-coef_ridge <- coef(ridge.cv, s = "lambda.min") 
+
 
