@@ -5,12 +5,6 @@ date: "26 3 2021"
 output: ioslides_presentation
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-source("Analysis.R")
-source("readFilesBenchmark.R")
-```
-
 ## The Project
 
 The Project we are about to present is an analysis of a YELP dataset that we found on kaggle.<br>
@@ -30,32 +24,27 @@ We try to predict the most important factors by using a forward selection method
 
 ## Workflow
 
-- Getting the data
-- Analysis
-- Results
+> - Getting the data
+> - Analysis
+> - Results
 
 ## Getting the data
 
 > - Download the files
-> - Change into usable format
+> - Problem 1: JSON unusable --> change into usable format
 
 
 ## R Code to convert JSON into csv
 
-For the review and user files the code was pretty simple.
-However this used up a lot of RAM and takes a lot of time.
 
-*Load review data*<br>
-review<-stream_in(file('yelp_academic_dataset_review.json'), flatten=T)
-fwrite(review, file="reviews.csv")
+> - Vectorization of a function to make it faster:
 
-*Load user data*<br>
-user<-stream_in(file('yelp_academic_dataset_user.json'), flatten=T)
-fwrite(user, file="user.csv")
+> - *modifyObjects<-Vectorize(modifyObject, SIMPLIFY = F)*
 
-For the business.json data we had to use a more complex way.
-This also involved unnesting some of the variables.
-Check out the JSONtoCSV.R file to see what we did.
+
+> - Using the jsonlite::stream_in function:
+
+> - *user<-stream_in(file('yelp_academic_dataset_user.json'), verbose = T)*
 
 
 ## Getting the data
@@ -67,14 +56,111 @@ Check out the JSONtoCSV.R file to see what we did.
 
 
 ## Filtering and cleaning
-The data was still too big
-There were many variables that we did not need so we filtered them out.
-For other variables we put a threshholds to filter them out:
+Problem 2: The data was still too big
 
-- Users with less than x comments were filtered out, since we only want active users.
-- ....
+1. Use efficient functions
+2. Filter out and clean variables
+
+
+
+## Filtering and cleaning - using efficient functions
+
+Benchmarking between different read in functions:
+
+```{r Benchmarks, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+autoplot(results_business)
+autoplot(results_user)
+```
+
+
+*user <- fread("userLarge.csv", select=c(user_id="character", review_count="numeric", useful="numeric", average_stars="numeric", elite = "character"))*
+
+*busi <- fread("businessLarge.csv")*
+
+## Filtering and cleaning - filter out and clean variables
+
+1. business variables:
+
+> - limited our variables to restaurant parent
+> - filtered out closed restaurants
+> - filtered out variables with >95% NA
+> - Cleaning the character variables
+
+> - **final data set with 81 usable Variables**
+
+## Code
+<!-- ech ha die code slides eifach mol inetoh, chöi mer aber guet wägloh -->
+
+1. busi <- 
+  busi %>%
+  filter(grepl("Restaurant", categories))
+  
+2. busi <- 
+  busi %>%
+  filter(is_open==1)
+  
+3. busi <- 
+  busi %>%
+  select(-attributes.AcceptsInsurance,
+         -attributes.HairSpecializesIn.straightperms,
+         -attributes.HairSpecializesIn.coloring,
+         - *and all other variables*
+        
+
+## Filtering and cleaning - filter out and clean variables
+
+2. user variables:
+
+> - only has 5 variables to begin with
+> - filter out users with < 1 review
+> - filter out non elite users
+> - create variable for average useful mentions per review
+
+> - **final data set with 2'189'457 observations**
+
+## Code 
+
+<!-- ech ha die code slides eifach mol inetoh, chöi mer aber guet wägloh -->
+
+userNew<-user%>% <br>
+**#only take users with at least one comment into consideration** <br>
+  filter(review_count>=1)%>% <br>
+**#create dummy if at some point, user is an elite user**<br>
+  mutate(eliteDummy=ifelse(!is.na(elite),1,0))%>% <br>
+  **#drop original elite column** select(-elite)%>%  <br>
+**#create variable for average useful mentions per review** <br>
+  mutate(usefulPerReview=useful/review_count)%>% <br>
+  select(-useful)
+
 
 ## Analysis
+
+1. The probabilty of being an elite user
+2. Most important factors for good reviews
+
+## Elite user Uluru OLS
+
+
+## Forward selection
+
+```{r Overview, eval=FALSE, include=FALSE}
+which(overview[1,]==TRUE)
+```
+
+
+```{r forward selection, eval=FALSE, include=FALSE}
+ggplot(variableSelection, aes(x=x, y=y, label=label))+ 
+  geom_line()+
+  geom_point(data = variableSelection, aes(color=best))+
+  geom_text(hjust=-0.1, color="red")+
+  xlab("Number of Variables")+
+  ylab("Adjusted R^2")+
+  ggtitle("Change of adjusted R^2 when including more variables")+ 
+  theme_bw()+
+  scale_y_continuous(breaks=seq(0.94, 0.97, 0.001))+
+  scale_color_manual(values=c("black", "red"))+
+  theme(legend.position = "none")
+```
 
 
 ## Results
