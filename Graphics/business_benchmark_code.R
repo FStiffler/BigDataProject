@@ -7,7 +7,7 @@ library(microbenchmark)
 
 
 # Microbenchmark:
-results_vroom <- microbenchmark(
+results <- microbenchmark(
   'base::read.csv' = read.csv("CSVFiles/business.csv"),
   'readr::read_csv' = read_csv("CSVFiles/business.csv"),
   'vroom::vroom' = vroom("CSVFiles/business.csv"),
@@ -17,18 +17,18 @@ results_vroom <- microbenchmark(
 
 
 ### Plot and save results
-# Start pdf capture
-pdf("business_microbenchmark.pdf")
+# Start png capture
+png("business_microbenchmark.png")
 
 # plot
-autoplot(object = results_vroom) +
+autoplot(object = results) +
   scale_y_log10() +
   labs(y = "Time [milliseconds], logged",
        title = "Business.csv Benchmark",
-       caption = "Package \"Microbenchmark\"")
+       caption = "Package \"Microbenchmark\", 25 evaluations")
 
 # sign dev off
 dev.off()
 
 # save results for later
-fwrite(results_vroom, file = "results_microbenchmark.csv")
+fwrite(results_benchmark, file = "results_microbenchmark.csv")
