@@ -7,6 +7,8 @@ output: ioslides_presentation
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+source("Analysis.R")
+source("readFilesBenchmark.R")
 ```
 
 ## The Project
