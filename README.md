@@ -24,7 +24,7 @@ Due to the group size, we take on two seperate analyses:
 
 ## Analysing the data
 
-After you did all the preparation steps you should have a few .csv files in your working directory. With these data sets you can start the analysis. All the R packages that we used are sourced in the [packageDependencies.R](link). They are sourced at the beginning of files so you dont need to add anything. If you use additional packages, make sure you add them to the packageDependencies file.
+After you did all the preparation steps you should have a few .csv files in your working directory. With these data sets you can start the analysis. All the R packages that we used are sourced in the [packageDependencies.R](link). They are sourced at the beginning of the files so you dont need to add anything. If you use additional packages, make sure you add them to the packageDependencies file.
 
 For our project we did a Uluru OLS regression and a forward selection.
 The OLS uses the user data, while the forward selection uses the business data.
