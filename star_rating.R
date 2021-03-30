@@ -4,6 +4,7 @@ setwd("C:/Users/sthan/OneDrive/Desktop/Universität Luzern/MASTER UNILU/FS2021/B
 library(tidyverse)
 library(glmnet)
 library(magrittr)
+library(stargazer)
 data <- read.csv(file = 'busiclean.csv')
 head(data)
 
@@ -46,7 +47,8 @@ summary(df)
 ols <- lm(stars ~ ., data = df)
 summary(ols)
 #the most important attribute for the star rating seems to be the noise level. This is negatively correlated with the rating. 
-
+#If you want to see the results separately or save them, then uncomment the code below.
+#stargazer::stargazer(ols, type = "text", out =   "ols Yelp")
 
 
 #Lasso and ridge were only applied to see which attributes were seen as important.
