@@ -25,7 +25,7 @@ autoplot(object = results) +
   scale_y_log10() +
   labs(y = "Time [milliseconds], logged",
        title = "Business.csv Benchmark",
-       caption = "Package \"Microbenchmark\", 25 evaluations")
+       caption = "Package \"Microbenchmark\", 25 evaluations, 58 MB file")
 
 # sign dev off
 dev.off()
