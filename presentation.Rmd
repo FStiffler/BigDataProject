@@ -27,7 +27,7 @@ For this we use a Uluru OLS method.
 <br>
 - The most important factors for good restaurant reviews
 <br>
-We try to predict the most important factors by using a forward selection method.
+We try to predict the most important factors by using lasso and forward selection.
 
 
 ## Workflow
@@ -45,7 +45,7 @@ We try to predict the most important factors by using a forward selection method
 ## R Code to convert JSON into csv
 
 
-- Vectorization function to process JSON strings:
+- Vectorization of function to process JSON strings:
 
 ```{r, eval=FALSE}
 modifyObjects<-Vectorize(modifyObject, SIMPLIFY = F)
@@ -105,32 +105,32 @@ include_graphics("Graphics/user_microbenchmark.png")
 
 ## Filter out and clean variables
 
-1. business variables:
+1. business dataset:
 
-> - limited our variables to restaurant parent
+> - limited our observations to restaurants
 > - filtered out closed restaurants
 > - filtered out variables with >95% NA
-> - Cleaning the character variables
+> - converted character variables to logical or factor
+> - used only variables with less than 20'000 NAs
 
-> - *final data set with 81 usable Variables*
+> - *final data set with 37 variables*
 
         
 
 ## Filter out and clean variables
 
-2. user variables:
+2. user dataset:
 
-> - to save RAM only used 5 variables to begin with
+> - to save RAM, only read the 5 relevant variables from csv file
 > - filter out users with < 1 review
-> - filter out non elite users
-> - create variable for average useful mentions per review
+> - create quality variable indicating average useful mentions per review
 
 > - *final data set with 2'189'457 observations*
 
 ## Analysis
 
-1. The probabilty of being an elite user
-2. Most important factors for good reviews
+1. The effect of average rating given by users on the probability of being an elite user
+2. Most important factors for good restaurant rating
 
 ## Elite user Uluru OLS
 
@@ -155,10 +155,10 @@ include_graphics("Graphics/ols_vs_uluru_coefficient_plot.png")
 include_graphics("Graphics/ols_vs_uluru_time_plot.png")
 ```
 
-## Restaurant variables
-1. Used all variables with less than 20'000 NAs
-2. Lasso Approach
-3. Forward selection
+## Restaurant rating analysis
+
+1. Lasso Approach
+2. Forward selection
 
 ## Lasso Approach
 
@@ -179,7 +179,7 @@ names(df_ml[,23])
 
 ## Forward Selection
 
-The Forward Selection shows us which variable explains the *variance* in the star rating the best.
+The Forward Selection shows us which variable is the best in explaining the *variance* of restaurant ratings.
 
 ```{r, echo=TRUE}
 
@@ -215,5 +215,5 @@ ggplot(variableSelection, aes(x=x, y=y, label=label))+
     1 and 5 Star ratings are on average the most useful ratings.
     
 2. Influence on business rating:<br>
-    Having a street parking and having a TV will result in the highest increase of a rating.<br>
+    Having a street parking and having a TV will result in the highest probability increase of a rating.<br>
     On the other hand, accepting credit cards explains most of the variance of the ratings.
