@@ -1,12 +1,16 @@
 ---
 title: 'Big Data Project: Analysing Yelp Data'
-author: "Benedikt Marxer, Flurin Stiffler, Than U & Lukas Jakob"
+author: "Benedikt Marxer, Flurin Stiffler, Thanusan Sivantharasa & Lukas Jakob"
 date: "26 3 2021"
-output: ioslides_presentation
+output: 
+  ioslides_presentation:
+    css: ioslides.css
+    template: nologo_template.html
 ---
 
-```{r set-options, echo=FALSE, cache=FALSE}
+```{r set-options, cache=FALSE, include=FALSE}
 library(knitr)
+source("Analysis.R")
 ```
 
 ## The Project
@@ -35,27 +39,31 @@ We try to predict the most important factors by using a forward selection method
 ## Getting the data
 
 > - Download the files
-> - Problem 1: JSON unusable --> change into usable format
+> - *Problem 1: JSON unusable --> change into usable format*
 
 
 ## R Code to convert JSON into csv
 
 
-> - Vectorization of a function to make it faster:
+- Vectorization of a function to make it faster:
 
-> - *modifyObjects<-Vectorize(modifyObject, SIMPLIFY = F)*
+```{r, eval=FALSE}
+modifyObjects<-Vectorize(modifyObject, SIMPLIFY = F)
+```
 
 
-> - Using the jsonlite::stream_in function:
+- Using the jsonlite::stream_in function:
 
-> - *user<-stream_in(file('yelp_academic_dataset_user.json'), verbose = T)*
+```{r, eval=FALSE}
+user<-stream_in(file('yelp_academic_dataset_user.json'), verbose = T)
+```
 
 
 ## Getting the data
 
 - Download the files
 - Change into usable format
-- Filtering and cleaning
+- *Filtering and cleaning*
 
 
 
@@ -67,7 +75,7 @@ Problem 2: The data was still too big
 
 
 
-## Filtering and cleaning - using efficient functions
+## Using efficient functions
 
 Benchmarking between different read in functions:
 
@@ -82,13 +90,20 @@ results <- microbenchmark(
 ```
 
 
-## Filtering and cleaning - using efficient functions
-```{r, echo = FALSE, out.width = "55%", fig.align='center'}
+## Using efficient functions
+```{r, echo = FALSE, out.width = "60%", fig.align='center'}
 include_graphics("Graphics/business_microbenchmark.png")
 ```
 
 
-## Filtering and cleaning - filter out and clean variables
+## Using efficient functions
+```{r, echo = FALSE, out.width = "80%", fig.align='center'}
+
+include_graphics("Graphics/user_microbenchmark.png")
+```
+
+
+## Filter out and clean variables
 
 1. business variables:
 
@@ -97,34 +112,11 @@ include_graphics("Graphics/business_microbenchmark.png")
 > - filtered out variables with >95% NA
 > - Cleaning the character variables
 
-> - **final data set with 81 usable Variables**
-
-## Code
-<!-- ech ha die code slides eifach mol inetoh, chöi mer aber guet wägloh -->
-```{r, eval=FALSE}
-busi <- 
-  busi %>%
-  filter(grepl("Restaurant", categories))
-```
-
-```{r, eval=FALSE}
-busi <- 
-  busi %>%
-  filter(is_open==1)
-```
-
-```{r, eval=FALSE}
-busi <- 
-  busi %>%
-  select(-attributes.AcceptsInsurance,
-         -attributes.HairSpecializesIn.straightperms,
-         -attributes.HairSpecializesIn.coloring,
-         - 'and all other variables')
-```
+> - *final data set with 81 usable Variables*
 
         
 
-## Filtering and cleaning - filter out and clean variables
+## Filter out and clean variables
 
 2. user variables:
 
@@ -133,22 +125,7 @@ busi <-
 > - filter out non elite users
 > - create variable for average useful mentions per review
 
-> - **final data set with 2'189'457 observations**
-
-## Code 
-
-<!-- ech ha die code slides eifach mol inetoh, chöi mer aber guet wägloh -->
-
-userNew<-user%>% <br>
-**#only take users with at least one comment into consideration** <br>
-  filter(review_count>=1)%>% <br>
-**#create dummy if at some point, user is an elite user**<br>
-  mutate(eliteDummy=ifelse(!is.na(elite),1,0))%>% <br>
-  **#drop original elite column** select(-elite)%>%  <br>
-**#create variable for average useful mentions per review** <br>
-  mutate(usefulPerReview=useful/review_count)%>% <br>
-  select(-useful)
-
+> - *final data set with 2'189'457 observations*
 
 ## Analysis
 
@@ -178,14 +155,45 @@ include_graphics("Graphics/ols_vs_uluru_coefficient_plot.png")
 include_graphics("Graphics/ols_vs_uluru_time_plot.png")
 ```
 
-## Forward selection
+## Restaurant variables
+1. Used all variables with less than 20'000 NAs
+2. Lasso Approach
+3. Forward selection
 
-```{r Overview, eval=FALSE, include=FALSE}
-which(overview[1,]==TRUE)
+## Lasso Approach
+
+```{r echo=TRUE}
+lasso <- glmnet(as.matrix(df_ml[,c(2:44)]), df_ml$stars, alpha = 1) 
+plot(lasso, xvar = "lambda", label = TRUE)
+```
+
+## Lasso Approach
+
+This gives us the two variables that have the biggest influence on the *beta* of the model.
+
+```{r echo=FALSE}
+names(df_ml[,5])
+names(df_ml[,23])
 ```
 
 
-```{r forward selection, eval=FALSE, include=FALSE}
+## Forward Selection
+
+The Forward Selection shows us which variable explains the highest *variance* of the model.
+
+```{r, echo=TRUE}
+
+forward<-regsubsets(stars~.,data=df ,nvmax=50, method ="forward",
+                    intercept = FALSE) #forward selection of variables
+overview<-summary(forward)$which #logical matrix showing which variable
+                                  #is in what forward model
+
+which(overview[1,]==TRUE)
+```
+
+## Forward Selection
+
+```{r forward selection, echo=FALSE}
 ggplot(variableSelection, aes(x=x, y=y, label=label))+ 
   geom_line()+
   geom_point(data = variableSelection, aes(color=best))+
@@ -202,3 +210,10 @@ ggplot(variableSelection, aes(x=x, y=y, label=label))+
 
 ## Results
 
+1. Elite user hypothesis:<br>
+    You are more likely to be an elite user when you give higher star ratings.<br> 
+    1 and 5 Star ratings are on average the most useful ratings.
+    
+2. Influence on business rating:<br>
+    Having a street parking and having a TV will result in the highest increase of a rating.<br>
+    On the other hand, accepting credit cards explains most of the variance of the ratings.
