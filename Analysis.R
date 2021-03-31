@@ -38,59 +38,59 @@ summary(df)
 
 # Lasso and Ridge Regression ####
 
+summary(df)
+
 ols <- lm(stars ~ ., data = df)
-summary(ols) 
+summary(ols)
 
-ols$coefficients[-1][which(ols$coefficients[-1]==max(ols$coefficients[-1]))] #<---------------------------------------------------------------------------------Output
-# The most important attribute for the star rating seems to be the ttributes.BusinessParking.street This is positively correlated with the rating.
+ols$coefficients[-1][which(ols$coefficients[-1]==max(ols$coefficients[-1]))]
+#the most important attribute for the star rating seems to be the Business Parking Street. This is positive correlated with the rating. 
+#If you want to see the results separately or save them, then uncomment the code below.
+#stargazer::stargazer(ols, type = "text", out =   "ols Yelp")
 
 
+#Lasso and ridge were only applied to see which attributes were seen as important.
+#lasso 
+df_ml<-df%>%
+  mutate(dummy_cols(., select_columns = "attributes.WiFi"))%>% #create dummies for attributes.WiFi levels
+  mutate(dummy_cols(., select_columns = "attributes.Alcohol"))%>%
+  mutate(dummy_cols(., select_columns = "attributes.NoiseLevel"))%>%
+  mutate(dummy_cols(., select_columns = "attributes.RestaurantsAttire"))%>%
+  mutate(dummy_cols(., select_columns = "attributes.RestaurantsPriceRange2"))%>%
+  select(-attributes.WiFi,  -attributes.Alcohol, -attributes.NoiseLevel,
+         -attributes.RestaurantsAttire, -attributes.RestaurantsPriceRange2)%>% #remove original factor variables
+select(-attributes.WiFi_free, #remove one dummy per original factor variable to prevent dummy trap
+         -attributes.Alcohol_beer_and_wine, 
+         -attributes.NoiseLevel_average, 
+         -attributes.RestaurantsAttire_casual,
+         -attributes.RestaurantsPriceRange2_1,
+         )
+  
 
-# Lasso and ridge were only applied to see which attributes were seen as important.
-# lasso 
-lasso <- glmnet(as.matrix(df[,c(2:37)]), df$stars, alpha = 1) 
-plot(lasso, xvar = "lambda", label = TRUE)# on the very left the lasso model is similar to the ols.
+str(df_ml)
+summary(df_ml)
 
-# Cross validation for finding the right lamda value
-lasso.cv <- cv.glmnet(as.matrix(df[,c(2:36)]), df$stars, type.measure = "mse", nfolds = 5, alpha = 1)
-
-plot(lasso.cv)
-
-print(paste0("Optimal lambda that minimizes cross-validated MSE: ", lasso.cv$lambda.min))
-print(paste0("Optimal lambda using one-standard-error-rule: ", lasso.cv$lambda.1se))
-
-# Print Lasso coefficients
-print(coef(lasso.cv, s = "lambda.min")) #<--------------------------------------------------------------------------------------------------------------Output
-# According to lasso is the attribute Ambience touristy not so important for the ratings. 
+lasso <- glmnet(as.matrix(df_ml[,c(2:44)]), df_ml$stars, alpha = 1) 
+plot(lasso, xvar = "lambda", label = TRUE)
+# on the very left the lasso model is similar to the ols. On the very right we have a sparse model.
+# The sparse model consists of two covariates.
+# The further to the right the variables are, the more decisive these variables are for the rating.
+# The two most important varaibles are the vars 5 and 23
+names(df_ml[,5]) #<--Output
+names(df_ml[,23]) #<--Output
 
 
 # alpha = 0 specifies a Ridge model
 
 # Estimate the Ridge
-ridge <- glmnet(as.matrix(df[,c(2:36)]), df$stars, alpha = 0)
+ridge <- glmnet(as.matrix(df_ml[,c(2:44)]), df_ml$stars, alpha = 0)
 
 # Plot the path of the Ridge coefficients
 plot(ridge, xvar = "lambda", label = TRUE)
 
+#Again Variable 5 Business Parking street is the most important
 
-# Cross-validate the Ridge model 
-ridge.cv <- cv.glmnet(as.matrix(df[,c(2:36)]), df$stars, type.measure = "mse", nfolds = 5, alpha = 0)
-
-# Plot the MSE in the cross-validation samples
-plot(ridge.cv)
-
-# Print the optimal lambda value
-print(paste0("Optimal lambda that minimizes cross-validated MSE: ", ridge.cv$lambda.min))
-print(paste0("Optimal lambda using one-standard-error-rule: ", ridge.cv$lambda.1se))
-
-
-#  Ridge Coefficients  #
-
-# Print Ridge coefficients
-print(coef(ridge.cv, s = "lambda.min"))
-
-# Save for later comparison
-coef_ridge <- coef(ridge.cv, s = "lambda.min") 
+# Print Ridge coefficients 
 
 
 # Forward Selection ####
