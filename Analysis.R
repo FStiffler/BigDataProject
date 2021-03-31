@@ -356,10 +356,3 @@ ggplot(plotdata, aes(x = subs_size, y = beta1)) +
 
 pdf("uluru_ols_benchmark.pdf")
 dev.off()
-### plot ols in a scatterplot3d, from https://mgimond.github.io/Stats-in-R/regression.html
-library(scatterplot3d) 
-s3d <- scatterplot3d(user$average_stars, user$usefulPerReview, user$eliteDummy, 
-                     highlight.3d=TRUE, angle=55, scale.y=0.7, pch=16,
-                     xlab = "average stars", ylab = "usefulPerReview", zlab="elite")
-# Add the 3-D regression plane defined by our model M2
-s3d$plane3d(extended_ols, lty.box="solid")
