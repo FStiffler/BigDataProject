@@ -158,13 +158,12 @@ userNew<-user%>% <br>
 ## Elite user Uluru OLS
 
 ```{r, eval=FALSE}
-# A tibble: 4 x 2
-    `lm()`    Uluru
-     <dbl>    <dbl>
-1 -0.0222  -0.0207 
-2  0.00765  0.00745
-3  0.00752  0.00679
-4  0.00143  0.00142
+# Regression results
+    `lm()`    Uluru   #all ***p<0.01
+1 -0.0222  -0.0207    #eliteDummy
+2  0.00765  0.00745   #average_stars
+3  0.00752  0.00679   #usefulPerReview
+4  0.00143  0.00142   #review_count
 ```
 
 ## Elite user Uluru OLS
