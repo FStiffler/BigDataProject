@@ -45,7 +45,7 @@ We try to predict the most important factors by using a forward selection method
 ## R Code to convert JSON into csv
 
 
-- Vectorization of a function to make it faster:
+- Vectorization function to process JSON strings:
 
 ```{r, eval=FALSE}
 modifyObjects<-Vectorize(modifyObject, SIMPLIFY = F)
