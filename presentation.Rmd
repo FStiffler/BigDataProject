@@ -120,7 +120,7 @@ include_graphics("Graphics/user_microbenchmark.png")
 
 2. user variables:
 
-> - only has 5 variables to begin with
+> - to save RAM only used 5 variables to begin with
 > - filter out users with < 1 review
 > - filter out non elite users
 > - create variable for average useful mentions per review
@@ -169,7 +169,7 @@ plot(lasso, xvar = "lambda", label = TRUE)
 
 ## Lasso Approach
 
-This gives us the two variables that have the biggest influence on the *beta* of the model.
+This gives us the two variables that have the largest beta and therefore affect the ratings the most in absolute terms.
 
 ```{r echo=FALSE}
 names(df_ml[,5])
@@ -179,7 +179,7 @@ names(df_ml[,23])
 
 ## Forward Selection
 
-The Forward Selection shows us which variable explains the highest *variance* of the model.
+The Forward Selection shows us which variable explains the highest *variance* in the star rating.
 
 ```{r, echo=TRUE}
 
