@@ -97,7 +97,7 @@ include_graphics("Graphics/business_microbenchmark.png")
 
 
 ## Using efficient functions
-```{r, echo = FALSE, out.width = "80%", fig.align='center'}
+```{r, echo = FALSE, out.width = "60%", fig.align='center'}
 
 include_graphics("Graphics/user_microbenchmark.png")
 ```
@@ -137,7 +137,7 @@ include_graphics("Graphics/user_microbenchmark.png")
 ```{r, eval=FALSE}
 # Regression results
     `lm()`    Uluru   #all ***p<0.01
-1 -0.0222  -0.0207    #eliteDummy
+1 -0.0222  -0.0207    #intercept (beta_0)
 2  0.00765  0.00745   #average_stars
 3  0.00752  0.00679   #usefulPerReview
 4  0.00143  0.00142   #review_count
@@ -169,7 +169,7 @@ plot(lasso, xvar = "lambda", label = TRUE)
 
 ## Lasso Approach
 
-This gives us the two variables that have the largest beta and therefore affect the ratings the most in absolute terms.
+This gives us the two variables that have the *largest beta* and therefore affect the ratings the most in absolute terms.
 
 ```{r echo=FALSE}
 names(df_ml[,5])
@@ -179,7 +179,7 @@ names(df_ml[,23])
 
 ## Forward Selection
 
-The Forward Selection shows us which variable explains the highest *variance* in the star rating.
+The Forward Selection shows us which variable explains the *variance* in the star rating the best.
 
 ```{r, echo=TRUE}
 
