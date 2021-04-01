@@ -48,6 +48,7 @@ We try to predict the most important factors by using lasso and forward selectio
 - Vectorization of function to process JSON strings:
 
 ```{r, eval=FALSE}
+jsonStrings<-as.list(readLines('yelp_academic_dataset_business.json'))
 modifyObjects<-Vectorize(modifyObject, SIMPLIFY = F)
 ```
 
@@ -212,7 +213,6 @@ ggplot(variableSelection, aes(x=x, y=y, label=label))+
 
 1. Elite user hypothesis:<br>
     You are more likely to be an elite user when you give higher star ratings.<br> 
-    1 and 5 Star ratings are on average the most useful ratings.
     
 2. Influence on business rating:<br>
     Having a street parking and having a TV will result in the highest probability increase of a rating.<br>
